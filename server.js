@@ -27,10 +27,22 @@ io.on('connection', function (socket) {
 
   socket.emit('statusMessage', 'You have connnected');
 
+  var votes = {};
+
+  socket.on('message', function (channel, message) {
+    if (channel === 'voteCast') {
+      votes[socket.id] = message;
+      console.log(votes);
+    }
+  });
+
   socket.on('disconnect', function () {
     console.log('A user has disconnected', io.engine.clientsCount);
+    delete votes[socket.id];
+    console.log(votes);
     io.sockets.emit('usersConnected', io.engine.clientsCount);
   });
+
 });
 
 module.exports = server;
