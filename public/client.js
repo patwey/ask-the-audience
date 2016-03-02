@@ -20,3 +20,16 @@ for (var i = 0; i < buttons.length; i++) {
     socket.send('voteCast', this.innerText);
   });
 }
+
+socket.on('voteCount', function (votes) {
+  for (vote in votes) {
+    e = document.getElementById(vote);
+    e.innerText = vote + ": " + votes[vote];
+  }
+});
+
+var currentVote = document.getElementById('current-vote');
+
+socket.on('voteConfirmation', function (message) {
+  currentVote.innerText = message;
+});

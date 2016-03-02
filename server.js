@@ -19,6 +19,8 @@ server.listen(port, function () {
 const socketIo = require('socket.io');
 const io = socketIo(server);
 
+var votes = {};
+
 // connection event listener
 io.on('connection', function (socket) {
   console.log('A user has connected.', io.engine.clientsCount);
@@ -27,22 +29,35 @@ io.on('connection', function (socket) {
 
   socket.emit('statusMessage', 'You have connnected');
 
-  var votes = {};
-
   socket.on('message', function (channel, message) {
     if (channel === 'voteCast') {
       votes[socket.id] = message;
-      console.log(votes);
+      io.sockets.emit('voteCount', countVotes(votes));
+      socket.emit('voteConfirmation', 'You voted for option ' + message);
     }
   });
 
   socket.on('disconnect', function () {
     console.log('A user has disconnected', io.engine.clientsCount);
     delete votes[socket.id];
-    console.log(votes);
+    socket.emit('voteCount', countVotes(votes));
     io.sockets.emit('usersConnected', io.engine.clientsCount);
   });
-
 });
+
+function countVotes(votes) {
+  var voteCount = {
+    A: 0,
+    B: 0,
+    C: 0,
+    D: 0
+  };
+
+  for (var vote in votes) {
+    voteCount[votes[vote]]++;
+  }
+
+  return voteCount;
+}
 
 module.exports = server;
